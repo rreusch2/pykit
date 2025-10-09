@@ -5,6 +5,7 @@ from datetime import datetime
 from inspect import cleandoc
 from typing import (
     Annotated,
+    Any,
     AsyncGenerator,
     Awaitable,
     Generic,
@@ -84,7 +85,7 @@ class ClientToolCall(BaseModel):
     """
 
     name: str
-    arguments: dict[str, str]
+    arguments: dict[str, Any]
 
 
 class _QueueCompleteSentinel: ...

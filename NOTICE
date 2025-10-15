@@ -1,13 +1,24 @@
-Copyright 2025 OpenAI
+ParleyApp Assistant
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Copyright 2025 ParleyApp
 
-    http://www.apache.org/licenses/LICENSE-2.0
+This product includes software originally developed by OpenAI (ChatKit Python).
+Original Copyright 2025 OpenAI
 
-Unless required by applicable law or agreed to in writing, software
-Distributed under the License is distributed on an “AS IS” BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-Limitations under the License.
+=== ParleyApp Modifications ===
+
+All modifications and additions specific to ParleyApp Assistant,
+including but not limited to:
+- parleyapp_server.py
+- parleyapp_tools.py  
+- parleyapp_widgets.py
+- Sports betting integration
+- Professor Lock chatbot functionality
+- MLB/WNBA/UFC prediction systems
+
+are Copyright 2025 ParleyApp - All rights reserved.
+
+=== Original Software ===
+
+The original ChatKit Python framework is licensed under the Apache License, Version 2.0.
+You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0

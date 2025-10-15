@@ -12,9 +12,9 @@ AI-powered sports betting assistant with real-time predictions, analysis, and Pr
 
 ## Components
 
-- `parleyapp_server.py`: Main server application
-- `parleyapp_tools.py`: Custom betting tools and utilities
-- `parleyapp_widgets.py`: UI widgets for betting interfaces
+- `pp_server.py`: Main server application
+- `pp_tools.py`: Custom betting tools and utilities
+- `pp_widgets.py`: UI widgets for betting interfaces
 - `app.py`: Core application logic
 - `simple_app.py`: Simplified demo application
 

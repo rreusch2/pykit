@@ -9,9 +9,9 @@ Original Copyright 2025 OpenAI
 
 All modifications and additions specific to Predictive Play Assistant,
 including but not limited to:
-- parleyapp_server.py
-- parleyapp_tools.py  
-- parleyapp_widgets.py
+- pp_server.py
+- pp_tools.py  
+- pp_widgets.py
 - Sports betting integration
 - Professor Lock chatbot functionality
 - MLB/WNBA/UFC prediction systems

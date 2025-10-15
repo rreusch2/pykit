@@ -1,13 +1,13 @@
-ParleyApp Assistant
+Predictive Play Assistant
 
-Copyright 2025 ParleyApp
+Copyright 2025 Predictive Play
 
 This product includes software originally developed by OpenAI (ChatKit Python).
 Original Copyright 2025 OpenAI
 
-=== ParleyApp Modifications ===
+=== Predictive Play Modifications ===
 
-All modifications and additions specific to ParleyApp Assistant,
+All modifications and additions specific to Predictive Play Assistant,
 including but not limited to:
 - parleyapp_server.py
 - parleyapp_tools.py  
@@ -16,7 +16,7 @@ including but not limited to:
 - Professor Lock chatbot functionality
 - MLB/WNBA/UFC prediction systems
 
-are Copyright 2025 ParleyApp - All rights reserved.
+are Copyright 2025 Predictive Play - All rights reserved.
 
 === Original Software ===
 

@@ -1,7 +1,7 @@
 [project]
-name = "parleyapp-assistant"
+name = "predictive-play-assistant"
 version = "1.0.0"
-description = "ParleyApp Assistant - AI-powered sports betting chatbot and analysis platform."
+description = "Predictive Play Assistant - AI-powered sports betting chatbot and analysis platform."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["pydantic", "uvicorn", "openai", "openai-agents>=0.3.2"]

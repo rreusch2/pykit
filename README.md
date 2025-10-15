@@ -1,4 +1,4 @@
-# ParleyApp Assistant
+# Predictive Play Assistant
 
 AI-powered sports betting assistant with real-time predictions, analysis, and Professor Lock chatbot integration.
 
@@ -24,6 +24,6 @@ See [SETUP_GUIDE.md](SETUP_GUIDE.md) for detailed installation instructions.
 
 ## License
 
-Originally forked from OpenAI ChatKit Python. This project contains significant modifications and additions for ParleyApp.
+Originally forked from OpenAI ChatKit Python. This project contains significant modifications and additions for Predictive Play.
 
-© 2025 ParleyApp - All rights reserved for ParleyApp-specific modifications.
+© 2025 Predictive Play - All rights reserved for Predictive Play-specific modifications.

@@ -35,7 +35,8 @@ FRONTEND_URL=https://www.predictive-play.com
 
 # Server Configuration
 PORT=8000
-"@ | Out-File -FilePath ".env" -Encoding UTF8
+"@
+        $envContent | Out-File -FilePath ".env" -Encoding UTF8
     }
 }
 

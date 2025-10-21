@@ -22,4 +22,4 @@ RUN pip install -e .
 EXPOSE $PORT
 
 # Run startup check then start the application
-CMD python startup_check.py && uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000}
+CMD ["sh", "-c", "python startup_check.py && uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000}"]

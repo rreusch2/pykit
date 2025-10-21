@@ -16,7 +16,7 @@ import asyncpg
 
 from chatkit.store import Store
 from chatkit.types import ThreadMetadata, ThreadItem, Page, Attachment
-from parleyapp_server import ProfessorLockChatKitServer
+from pp_server import ProfessorLockChatKitServer
 
 load_dotenv()
 
@@ -384,6 +384,53 @@ async def startup():
     print("✅ ChatKit server started on http://localhost:8000")
     print("📊 Professor Lock is ready to analyze your bets!")
 
+@app.post("/create-session")
+async def create_session(request: Request):
+    """Create Professor Lock ChatKit session"""
+    
+    try:
+        body = await request.json()
+        user_id = body.get("user_id")
+        user_email = body.get("user_email", "")
+        tier = body.get("tier", "free")
+        preferences = body.get("preferences", {})
+        
+        # Generate session ID and client secret
+        import uuid
+        session_id = f"prof_lock_{uuid.uuid4().hex[:16]}"
+        client_secret = f"cs_{uuid.uuid4().hex[:24]}"
+        
+        # Store session context
+        context = {
+            "user_id": user_id,
+            "user_email": user_email,
+            "session_id": session_id,
+            "tier": tier,
+            "preferences": preferences,
+            "timestamp": datetime.now()
+        }
+        
+        return JSONResponse({
+            "session_id": session_id,
+            "client_secret": client_secret,
+            "status": "active",
+            "features": {
+                "professor_lock_personality": True,
+                "advanced_widgets": True,
+                "betting_analysis": True,
+                "parlay_builder": True,
+                "statmuse_integration": True,
+                "live_odds": True
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ Error creating session: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
 @app.post("/chatkit")
 async def chatkit_endpoint(request: Request):
     """Main ChatKit endpoint"""
@@ -396,6 +443,8 @@ async def chatkit_endpoint(request: Request):
         context = {
             "user_id": request.headers.get("X-User-Id"),
             "session_id": request.headers.get("X-Session-Id"),
+            "user_email": request.headers.get("X-User-Email"),
+            "user_tier": request.headers.get("X-User-Tier", "free"),
             "timestamp": datetime.now()
         }
         

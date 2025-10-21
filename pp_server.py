@@ -33,12 +33,13 @@ from chatkit.store import Store
 from chatkit.errors import StreamError
 
 # Import our custom tools and widgets
-from parleyapp_tools import WebSearchTool, SportsDataTool, StatMuseTool
+from parleyapp_tools import WebSearchTool, SportsDataTool, StatMuseTool, BettingAnalysisTool
 from parleyapp_widgets import (
     create_search_progress_widget,
     create_odds_comparison_widget,
     create_parlay_builder_widget,
-    create_trends_chart_widget
+    create_trends_chart_widget,
+    create_player_prop_widget
 )
 
 load_dotenv()
@@ -51,6 +52,7 @@ class ProfessorLockChatKitServer(ChatKitServer):
         self.web_search = WebSearchTool()
         self.sports_data = SportsDataTool()
         self.statmuse = StatMuseTool()
+        self.betting_analysis = BettingAnalysisTool()
     
     # Define Professor Lock Agent
     professor_lock_agent = Agent[AgentContext](
@@ -94,32 +96,7 @@ Always provide value-driven picks with reasoning."""
         """Web search with live progress widget"""
         
         # Create and stream initial search widget
-        search_widget = Card(
-            size="md",
-            theme="dark",
-            children=[
-                Row(align="center", gap="8px", children=[
-                    Icon(name="search", size="md", color="#168aa2"),
-                    Title(value="🔍 Web Search", size="sm"),
-                    Spacer(),
-                    Badge(label="LIVE", color="danger", variant="soft", pill=True)
-                ]),
-                Divider(spacing="8px"),
-                Box(
-                    id="results",
-                    direction="col",
-                    gap="8px",
-                    children=[
-                        Text(
-                            id="status",
-                            value=f"Searching: {query}",
-                            streaming=True,
-                            italic=True
-                        )
-                    ]
-                )
-            ]
-        )
+        search_widget = create_search_progress_widget(query, search_type)
         
         await ctx.context.stream_widget(search_widget)
         
@@ -168,35 +145,8 @@ Always provide value-driven picks with reasoning."""
         # Get odds data
         odds_data = await self.sports_data.get_odds(sport, market_type)
         
-        # Create odds comparison widget
-        odds_rows = []
-        for game in odds_data.get("games", []):
-            odds_rows.append(
-                ListViewItem(children=[
-                    Row(gap="12px", align="center", children=[
-                        Col(flex=2, children=[
-                            Text(value=game["matchup"], weight="semibold"),
-                            Text(value=game["time"], size="sm", color="gray")
-                        ]),
-                        Badge(label=f"{game['spread']}", color="info", variant="soft"),
-                        Badge(label=f"O/U {game['total']}", color="secondary", variant="soft"),
-                        Col(children=[
-                            Text(value=f"ML: {game['home_ml']}", size="sm"),
-                            Text(value=f"ML: {game['away_ml']}", size="sm")
-                        ])
-                    ])
-                ])
-            )
-        
-        odds_widget = Card(
-            size="lg",
-            children=[
-                Title(value=f"📊 {sport} Odds Board", size="md"),
-                Text(value=f"Updated: {datetime.now().strftime('%I:%M %p')}", size="sm", color="gray"),
-                Divider(),
-                ListView(children=odds_rows, limit=10)
-            ]
-        )
+        # Create odds comparison widget using our custom widget
+        odds_widget = create_odds_comparison_widget(odds_data.get("games", []))
         
         await ctx.context.stream_widget(odds_widget)
         

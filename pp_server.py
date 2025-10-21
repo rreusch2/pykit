@@ -86,7 +86,7 @@ When analyzing, use widgets to show:
 Always provide value-driven picks with reasoning."""
     )
     
-    @function_tool(description="Search web for sports news, injuries, weather, betting insights")
+    @function_tool
     async def web_search_visual(
         self,
         ctx: RunContextWrapper[AgentContext],
@@ -128,7 +128,7 @@ Always provide value-driven picks with reasoning."""
         
         return "\n".join(results)
     
-    @function_tool(description="Get live sports odds and player props with visualization")
+    @function_tool
     async def get_odds_visual(
         self,
         ctx: RunContextWrapper[AgentContext],
@@ -152,7 +152,7 @@ Always provide value-driven picks with reasoning."""
         
         return json.dumps(odds_data, indent=2)
     
-    @function_tool(description="Query StatMuse for historical stats and trends")
+    @function_tool
     async def statmuse_query(
         self,
         ctx: RunContextWrapper[AgentContext],
@@ -194,7 +194,7 @@ Always provide value-driven picks with reasoning."""
         
         return result.get("answer", "")
     
-    @function_tool(description="Build interactive parlay with visual bet slip")
+    @function_tool
     async def build_parlay(
         self,
         ctx: RunContextWrapper[AgentContext],

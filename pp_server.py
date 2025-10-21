@@ -122,7 +122,7 @@ async def statmuse_query(
 @function_tool
 async def build_parlay(
     ctx: RunContextWrapper,
-    legs: List[Dict[str, Any]],
+    legs: list,
     stake: float = 100
 ) -> str:
     """Create interactive parlay builder"""

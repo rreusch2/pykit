@@ -18,8 +18,8 @@ COPY . .
 # Install the chatkit package
 RUN pip install -e .
 
-# Expose port (Railway will assign this dynamically)
-EXPOSE $PORT
+# Expose default port (Railway sets PORT env var at runtime)
+EXPOSE 8080
 
-# Run startup check then start the application
-CMD ["sh", "-c", "python startup_check.py && uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Use Python bootstrap that reads PORT env and starts Uvicorn
+CMD ["python", "start.py"]

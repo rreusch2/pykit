@@ -431,9 +431,18 @@ async def create_session(request: Request):
             content={"error": str(e)}
         )
 
+@app.get("/chatkit")
+async def chatkit_get():
+    """ChatKit endpoint verification (GET)"""
+    return JSONResponse({
+        "status": "ok",
+        "service": "Professor Lock ChatKit Server",
+        "version": "1.0.0"
+    })
+
 @app.post("/chatkit")
 async def chatkit_endpoint(request: Request):
-    """Main ChatKit endpoint"""
+    """Main ChatKit endpoint (POST)"""
     
     try:
         # Get request body
@@ -447,6 +456,8 @@ async def chatkit_endpoint(request: Request):
             "user_tier": request.headers.get("X-User-Tier", "free"),
             "timestamp": datetime.now()
         }
+        
+        print(f"📨 ChatKit request from user: {context['user_id']} (tier: {context['user_tier']})")
         
         # Process request
         result = await chatkit_server.process(body, context)
@@ -469,6 +480,8 @@ async def chatkit_endpoint(request: Request):
             
     except Exception as e:
         print(f"❌ Error processing ChatKit request: {e}")
+        import traceback
+        traceback.print_exc()
         return JSONResponse(
             status_code=500,
             content={"error": str(e)}

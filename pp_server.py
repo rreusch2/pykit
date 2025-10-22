@@ -27,8 +27,7 @@ from chatkit.types import (
     ThreadMetadata, UserMessageItem, ThreadStreamEvent,
     WidgetItem, HiddenContextItem, ClientToolCallItem,
     AssistantMessageContent, Annotation, URLSource,
-    ProgressUpdateEvent, ThreadItemDoneEvent, Event,
-    ClientToolCallOutputItem
+    ProgressUpdateEvent, ThreadItemDoneEvent
 )
 from chatkit.store import Store
 from chatkit.errors import StreamError
@@ -247,10 +246,10 @@ Always provide value-driven picks with reasoning."""
     async def respond(
         self,
         thread: ThreadMetadata,
-        input: UserMessageItem | ClientToolCallOutputItem,
+        input_user_message: UserMessageItem | None,
         context: Any
-    ) -> AsyncIterator[Event]:
-        """Main response handler - implements ChatKit server protocol"""
+    ) -> AsyncIterator[ThreadStreamEvent]:
+        """Main response handler - streams events for new user messages"""
         
         # Create agent context
         agent_context = AgentContext(
@@ -260,11 +259,8 @@ Always provide value-driven picks with reasoning."""
         )
         
         # Convert input to agent input format
-        if isinstance(input, UserMessageItem):
-            agent_input = await simple_to_agent_input(input)
-        elif isinstance(input, ClientToolCallOutputItem):
-            # Handle client tool call outputs (for now, treat as continuation)
-            agent_input = []
+        if input_user_message:
+            agent_input = await simple_to_agent_input(input_user_message)
         else:
             agent_input = []
         
@@ -285,7 +281,7 @@ Always provide value-driven picks with reasoning."""
         action: Action[str, Any],
         sender: WidgetItem | None,
         context: Any
-    ) -> AsyncIterator[Event]:
+    ) -> AsyncIterator[ThreadStreamEvent]:
         """Handle widget actions"""
         
         if action.type == "submit_parlay":

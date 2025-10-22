@@ -27,7 +27,8 @@ from chatkit.types import (
     ThreadMetadata, UserMessageItem, ThreadStreamEvent,
     WidgetItem, HiddenContextItem, ClientToolCallItem,
     AssistantMessageContent, Annotation, URLSource,
-    ProgressUpdateEvent, ThreadItemDoneEvent
+    ProgressUpdateEvent, ThreadItemDoneEvent, Event,
+    ClientToolCallOutputItem
 )
 from chatkit.store import Store
 from chatkit.errors import StreamError
@@ -246,10 +247,10 @@ Always provide value-driven picks with reasoning."""
     async def respond(
         self,
         thread: ThreadMetadata,
-        input_user_message: UserMessageItem | None,
+        input: UserMessageItem | ClientToolCallOutputItem,
         context: Any
-    ) -> AsyncIterator[ThreadStreamEvent]:
-        """Main response handler"""
+    ) -> AsyncIterator[Event]:
+        """Main response handler - implements ChatKit server protocol"""
         
         # Create agent context
         agent_context = AgentContext(
@@ -258,10 +259,19 @@ Always provide value-driven picks with reasoning."""
             request_context=context
         )
         
+        # Convert input to agent input format
+        if isinstance(input, UserMessageItem):
+            agent_input = await simple_to_agent_input(input)
+        elif isinstance(input, ClientToolCallOutputItem):
+            # Handle client tool call outputs (for now, treat as continuation)
+            agent_input = []
+        else:
+            agent_input = []
+        
         # Run agent with streaming
         result = Runner.run_streamed(
             self.professor_lock_agent,
-            await simple_to_agent_input(input_user_message) if input_user_message else [],
+            agent_input,
             context=agent_context
         )
         
@@ -275,7 +285,7 @@ Always provide value-driven picks with reasoning."""
         action: Action[str, Any],
         sender: WidgetItem | None,
         context: Any
-    ) -> AsyncIterator[ThreadStreamEvent]:
+    ) -> AsyncIterator[Event]:
         """Handle widget actions"""
         
         if action.type == "submit_parlay":

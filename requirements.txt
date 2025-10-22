@@ -1,7 +1,7 @@
 # Force rebuild - updated 2025-10-22
 openai-chatkit
 openai
-openai-agents-sdk==0.4.1
+openai-agents==0.4.1
 fastapi
 uvicorn[standard]
 python-multipart

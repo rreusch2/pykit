@@ -434,14 +434,18 @@ async def create_session(request: Request):
 @app.options("/chatkit")
 async def chatkit_options():
     """CORS preflight support for ChatKit."""
-    return Response(status_code=204)
+    return Response(status_code=204, headers={
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+    })
 
 @app.get("/chatkit")
 async def chatkit_get():
     """Health/handshake route to satisfy ChatKit GET checks."""
     return JSONResponse({
-        "status": "ok",
-        "message": "Use POST for ChatKit events",
+        "status": "ok", 
+        "message": "ChatKit server is running. Use POST to send events.",
         "timestamp": datetime.now().isoformat()
     })
 

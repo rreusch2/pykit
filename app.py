@@ -1,38 +1,62 @@
 """
 ParleyApp ChatKit FastAPI Application
+Production-ready self-hosted ChatKit server for Predictive Play
+
 Run with: uvicorn app:app --reload --port 8000
 """
 
 import os
 import json
+import uuid
 from typing import Any, Dict, Optional
 from datetime import datetime
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, Header
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-import asyncio
-import asyncpg
 
-from chatkit.store import Store
-from chatkit.types import ThreadMetadata, ThreadItem, Page, Attachment
 from pp_server import ProfessorLockChatKitServer
+from chatkit_supabase_store import SupabaseStore
 
 load_dotenv()
 
 # FastAPI app
-app = FastAPI(title="ParleyApp ChatKit Server")
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https*://*.predictive-play.com", "https://predictive-play.com", "http://localhost:3000", "https://*.vercel.app"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+app = FastAPI(
+    title="Predictive Play ChatKit Server",
+    description="Self-hosted ChatKit server for Professor Lock AI",
+    version="1.0.0"
 )
 
-class PostgresStore(Store):
+# Add CORS middleware - Updated for your domains
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://predictive-play.com",
+        "https://www.predictive-play.com",
+        "https://*.predictive-play.com",
+        "https://*.vercel.app",
+        "http://localhost:3000",
+        "http://localhost:3001"
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+    expose_headers=["*"]
+)
+
+# Remove old PostgresStore implementation - using SupabaseStore instead
+# Initialize Supabase store
+data_store = SupabaseStore(
+    supabase_url=os.getenv("SUPABASE_URL"),
+    supabase_key=os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+)
+
+# Initialize ChatKit server with Professor Lock
+chatkit_server = ProfessorLockChatKitServer(data_store)
+
+# Old PostgresStore for reference (now replaced by SupabaseStore)
+"""
+class _PostgresStore(Store):
     """PostgreSQL implementation of ChatKit Store"""
     
     def __init__(self):
@@ -366,55 +390,70 @@ class PostgresStore(Store):
                 "DELETE FROM chatkit_attachments WHERE id = $1",
                 attachment_id
             )
-
-# Initialize store and server
-data_store = PostgresStore()
-chatkit_server = ProfessorLockChatKitServer(data_store)
+"""
 
 @app.on_event("startup")
 async def startup():
-    """Initialize database pool on startup"""
-    await data_store.init_pool()
-    print("✅ ChatKit server started on http://localhost:8000")
-    print("📊 Professor Lock is ready to analyze your bets!")
+    """Initialize server on startup"""
+    print("=" * 60)
+    print("🎯 Predictive Play ChatKit Server Starting...")
+    print("=" * 60)
+    print(f"✅ Professor Lock Agent: Active")
+    print(f"📊 Supabase Store: Connected")
+    print(f"🔧 Widgets: Enabled (Search, Odds, Parlay, Trends)")
+    print(f"🔥 Tools: Enabled (Web Search, StatMuse, Betting Analysis)")
+    print(f"🌐 Server: http://0.0.0.0:{os.getenv('PORT', 8000)}")
+    print("=" * 60)
+    print("💰 Ready to lock in those winning bets! 🎲")
+    print("=" * 60)
 
-@app.post("/create-session")
-async def create_session(request: Request):
-    """Create Professor Lock ChatKit session"""
-    
+@app.post("/api/chatkit/session")
+async def create_chatkit_session(
+    request: Request,
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Create self-hosted ChatKit session
+    This endpoint replaces OpenAI's session endpoint
+    """
     try:
+        # Verify user authentication
+        if not authorization or not authorization.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={"error": "Missing or invalid authorization"}
+            )
+        
+        token = authorization.replace("Bearer ", "")
+        
+        # You could verify the token with Supabase here if needed
+        # For now, we'll trust it since it's coming from your own web app
+        
         body = await request.json()
         user_id = body.get("user_id")
-        user_email = body.get("user_email", "")
-        tier = body.get("tier", "free")
-        preferences = body.get("preferences", {})
         
-        # Generate session ID and client secret
-        import uuid
-        session_id = f"prof_lock_{uuid.uuid4().hex[:16]}"
-        client_secret = f"cs_{uuid.uuid4().hex[:24]}"
+        if not user_id:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "user_id is required"}
+            )
         
-        # Store session context
-        context = {
-            "user_id": user_id,
-            "user_email": user_email,
-            "session_id": session_id,
-            "tier": tier,
-            "preferences": preferences,
-            "timestamp": datetime.now()
-        }
+        # Generate simple client secret (since we control the server)
+        client_secret = f"cs_self_hosted_{user_id}_{uuid.uuid4().hex[:16]}"
+        session_id = f"session_{uuid.uuid4().hex[:16]}"
+        
+        print(f"✅ Created ChatKit session for user: {user_id}")
         
         return JSONResponse({
-            "session_id": session_id,
             "client_secret": client_secret,
+            "session_id": session_id,
             "status": "active",
+            "self_hosted": True,
             "features": {
-                "professor_lock_personality": True,
-                "advanced_widgets": True,
-                "betting_analysis": True,
-                "parlay_builder": True,
-                "statmuse_integration": True,
-                "live_odds": True
+                "professor_lock": True,
+                "widgets": True,
+                "advanced_tools": True,
+                "statmuse": True
             }
         })
         

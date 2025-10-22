@@ -478,22 +478,38 @@ async def chatkit_get():
         "timestamp": datetime.now().isoformat()
     })
 
+@app.options("/chatkit")
+async def chatkit_options():
+    """Handle CORS preflight for ChatKit"""
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
+
 @app.post("/chatkit")
 async def chatkit_endpoint(request: Request):
     """Main ChatKit endpoint"""
     
     try:
+        print("🎯 Received ChatKit request")
+        
         # Get request body
         body = await request.body()
         
         # Get context (user info, etc)
         context = {
-            "user_id": request.headers.get("X-User-Id"),
-            "session_id": request.headers.get("X-Session-Id"),
-            "user_email": request.headers.get("X-User-Email"),
-            "user_tier": request.headers.get("X-User-Tier", "free"),
+            "user_id": request.headers.get("x-user-id"),
+            "session_id": request.headers.get("x-session-id"),
+            "user_email": request.headers.get("x-user-email"),
+            "user_tier": request.headers.get("x-user-tier", "free"),
             "timestamp": datetime.now()
         }
+        
+        print(f"📋 User context: {context['user_id']} ({context['user_tier']})")
         
         # Process request
         result = await chatkit_server.process(body, context)
@@ -506,19 +522,30 @@ async def chatkit_endpoint(request: Request):
                 headers={
                     "Cache-Control": "no-cache",
                     "Connection": "keep-alive",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Headers": "*",
                 }
             )
         else:
             return Response(
                 content=result.json,
-                media_type="application/json"
+                media_type="application/json",
+                headers={
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Headers": "*",
+                }
             )
             
     except Exception as e:
         print(f"❌ Error processing ChatKit request: {e}")
+        import traceback
+        traceback.print_exc()
         return JSONResponse(
             status_code=500,
-            content={"error": str(e)}
+            content={"error": str(e)},
+            headers={
+                "Access-Control-Allow-Origin": "*",
+            }
         )
 
 @app.get("/health")

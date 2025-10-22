@@ -23,16 +23,10 @@ load_dotenv()
 # FastAPI app
 app = FastAPI(title="ParleyApp ChatKit Server")
 
-# CORS configuration
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001", 
-        "http://localhost:19006",
-        "https://www.predictive-play.com",
-        os.getenv("FRONTEND_URL", "*")
-    ],
+    allow_origins=["https*://*.predictive-play.com", "https://predictive-play.com", "http://localhost:3000", "https://*.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -434,18 +428,14 @@ async def create_session(request: Request):
 @app.options("/chatkit")
 async def chatkit_options():
     """CORS preflight support for ChatKit."""
-    return Response(status_code=204, headers={
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "*",
-    })
+    return Response(status_code=204)
 
 @app.get("/chatkit")
 async def chatkit_get():
     """Health/handshake route to satisfy ChatKit GET checks."""
     return JSONResponse({
-        "status": "ok", 
-        "message": "ChatKit server is running. Use POST to send events.",
+        "status": "ok",
+        "message": "Use POST for ChatKit events",
         "timestamp": datetime.now().isoformat()
     })
 

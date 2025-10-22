@@ -55,9 +55,9 @@ data_store = SupabaseStore(
 chatkit_server = ProfessorLockChatKitServer(data_store)
 
 # Old PostgresStore for reference (now replaced by SupabaseStore)
-"""
+'''
 class _PostgresStore(Store):
-    """PostgreSQL implementation of ChatKit Store"""
+    # PostgreSQL implementation of ChatKit Store (deprecated)
     
     def __init__(self):
         self.pool = None
@@ -390,7 +390,7 @@ class _PostgresStore(Store):
                 "DELETE FROM chatkit_attachments WHERE id = $1",
                 attachment_id
             )
-"""
+'''
 
 @app.on_event("startup")
 async def startup():

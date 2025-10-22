@@ -280,4 +280,11 @@ class SupabaseStore(Store):
             self.supabase.table("chatkit_threads").delete().eq("id", thread_id).execute()
         except Exception as e:
             print(f"Error deleting thread: {e}")
+    
+    async def delete_thread_item(self, thread_id: str, item_id: str, context: Any) -> None:
+        """Delete a specific thread item (required by ChatKit v1.0.2+)"""
+        try:
+            self.supabase.table("chatkit_thread_items").delete().eq("id", item_id).eq("thread_id", thread_id).execute()
+        except Exception as e:
+            print(f"Error deleting thread item {item_id}: {e}")
 

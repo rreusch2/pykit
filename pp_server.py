@@ -11,6 +11,7 @@ from datetime import datetime
 from collections.abc import AsyncGenerator
 import httpx
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
 from agents import Agent, Runner, function_tool, RunContextWrapper, StopAtTools
 
@@ -43,6 +44,12 @@ from parleyapp_widgets import (
 )
 
 load_dotenv()
+
+class ParlayLeg(BaseModel):
+    """Single leg in a parlay bet"""
+    pick: str
+    type: str
+    odds: str
 
 @function_tool
 async def web_search_visual(
@@ -122,7 +129,7 @@ async def statmuse_query(
 @function_tool
 async def build_parlay(
     ctx: RunContextWrapper,
-    legs: list[dict[str, Any]],
+    legs: list[ParlayLeg],
     stake: float = 100
 ) -> str:
     """Create interactive parlay builder with multiple betting legs"""
@@ -142,7 +149,7 @@ async def build_parlay(
 
     total_odds = 1.0
     for leg in legs:
-        total_odds *= american_to_decimal(leg.get("odds", -110))
+        total_odds *= american_to_decimal(leg.odds)
     payout = stake * total_odds
 
     leg_items = []
@@ -152,8 +159,8 @@ async def build_parlay(
                 Row(gap="12px", align="center", children=[
                     Badge(label=str(i), variant="solid", pill=True, size="sm"),
                     Col(flex=1, children=[
-                        Text(value=leg.get("pick", ""), weight="semibold"),
-                        Text(value=f"{leg.get('type','')} • {leg.get('odds','')}", size="sm", color="gray")
+                        Text(value=leg.pick, weight="semibold"),
+                        Text(value=f"{leg.type} • {leg.odds}", size="sm", color="gray")
                     ]),
                     Button(
                         label="❌",
@@ -192,7 +199,7 @@ async def build_parlay(
                 ])
             ]),
             Row(gap="12px", children=[
-                Button(label="🔒 Lock It In", style="primary", block=True, onClickAction=ActionConfig(type="submit_parlay", payload={"legs": legs, "stake": stake})),
+                Button(label="🔒 Lock It In", style="primary", block=True, onClickAction=ActionConfig(type="submit_parlay", payload={"legs": [leg.model_dump() for leg in legs], "stake": stake})),
                 Button(label="Add More Legs", variant="outline", block=True, onClickAction=ActionConfig(type="add_legs"))
             ])
         ],

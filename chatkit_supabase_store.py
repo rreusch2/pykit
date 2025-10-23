@@ -11,6 +11,7 @@ from chatkit.store import Store, Page
 from chatkit.types import ThreadMetadata, ThreadItem, Attachment
 from supabase import create_client, Client
 import os
+from pydantic import TypeAdapter
 
 
 class SupabaseStore(Store):
@@ -113,30 +114,32 @@ class SupabaseStore(Store):
             
             query = query.limit(limit)
             result = query.execute()
-            
-            # Deserialize items
-            items = []
-            for item_data in result.data:
+
+            # Deserialize items into typed ThreadItem
+            items: list[ThreadItem] = []
+            adapter = TypeAdapter(ThreadItem)
+            for item_row in result.data:
                 try:
-                    # Reconstruct the ThreadItem from JSON
-                    item_json = item_data.get("item_data", {})
-                    # The item_data should contain the full ThreadItem serialized
-                    # We'll use pydantic to reconstruct it
-                    items.append(item_json)  # This needs proper deserialization
+                    item_json = item_row.get("item_data", {})
+                    typed_item: ThreadItem = adapter.validate_python(item_json)
+                    items.append(typed_item)
                 except Exception as e:
-                    print(f"Error deserializing item: {e}")
-            
-            # Determine if there are more items
+                    print(f"Error deserializing item {item_row.get('id')}: {e}")
+
+            # Determine pagination cursor using created_at of last item
             has_more = len(items) >= limit
-            
+            after_cursor = (
+                items[-1].created_at.isoformat() if items and has_more else None
+            )
+
             return Page(
                 data=items,
                 has_more=has_more,
-                next_cursor=items[-1].get("id") if items and has_more else None
+                after=after_cursor,
             )
         except Exception as e:
             print(f"Error loading thread items: {e}")
-            return Page(data=[], has_more=False, next_cursor=None)
+            return Page(data=[], has_more=False, after=None)
     
     async def save_attachment(self, attachment: Attachment, context: Any) -> None:
         """Save attachment metadata to Supabase"""
@@ -213,15 +216,19 @@ class SupabaseStore(Store):
                 ))
             
             has_more = len(threads) >= limit
-            
+
+            after_cursor = (
+                threads[-1].created_at.isoformat() if threads and has_more else None
+            )
+
             return Page(
                 data=threads,
                 has_more=has_more,
-                next_cursor=threads[-1].id if threads and has_more else None
+                after=after_cursor,
             )
         except Exception as e:
             print(f"Error loading threads: {e}")
-            return Page(data=[], has_more=False, next_cursor=None)
+            return Page(data=[], has_more=False, after=None)
     
     async def add_thread_item(
         self, thread_id: str, item: ThreadItem, context: Any
@@ -264,8 +271,9 @@ class SupabaseStore(Store):
                 raise ValueError(f"Item {item_id} not found in thread {thread_id}")
             
             item_data = result.data[0]["item_data"]
-            # Reconstruct ThreadItem (needs proper type handling)
-            return item_data
+            # Reconstruct ThreadItem
+            adapter = TypeAdapter(ThreadItem)
+            return adapter.validate_python(item_data)
         except Exception as e:
             print(f"Error loading thread item: {e}")
             raise

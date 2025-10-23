@@ -122,10 +122,10 @@ async def statmuse_query(
 @function_tool
 async def build_parlay(
     ctx: RunContextWrapper,
-    legs: list,
+    legs: list[dict[str, Any]],
     stake: float = 100
 ) -> str:
-    """Create interactive parlay builder"""
+    """Create interactive parlay builder with multiple betting legs"""
     def american_to_decimal(odds: int | str) -> float:
         try:
             if isinstance(odds, str):
